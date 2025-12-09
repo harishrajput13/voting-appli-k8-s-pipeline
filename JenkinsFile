@@ -12,8 +12,9 @@ pipeline {
     stage('Checkout') {
       steps {
          script {
-              git url: ${GIT_URL}, branch: ${BRANCH}
+              git url: GIT_URL, branch: BRANCH
               COMMIT_ID = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
+              echo "Using commit id: ${COMMIT_ID}"
             }
         }
     }
