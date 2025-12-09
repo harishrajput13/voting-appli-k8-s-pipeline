@@ -1,10 +1,9 @@
 pipeline {
-  agent { label 'slave-1' }
+  agent any
 
   environment {
-    ECR_REPO = '042666117784.dkr.ecr.us-east-1.amazonaws.com/push-from-pipeline' 
+    ECR_REPO = '042666117784.dkr.ecr.us-east-1.amazonaws.com/project-1' 
     DOCKER_CRED_ID = 'docker-hub-cred'
-    IMAGE_ID="${IMAGE_ID}"
     GIT_URL="https://github.com/harishrajput13/voting-appli-k8-s-pipeline.git"
     BRANCH="main"
   }
@@ -22,7 +21,7 @@ pipeline {
     stage('Build Image') {
       steps {
         script {
-          sh 'docker build -t ${ECR_REPO}:${IMAGE_ID} .'
+          sh 'docker build -t ${ECR_REPO}:${COMMIT_ID} .'
         }
       }
     }
@@ -31,7 +30,7 @@ pipeline {
       steps {
         script {
           sh '''
-            CID=$(docker run -d -p 8080:80 ${ECR_REPO}:${IMAGE_ID})
+            CID=$(docker run -d -p 8080:80 ${ECR_REPO}:${COMMIT_ID})
             docker rm -f $CID || true
           '''
         }
@@ -44,10 +43,11 @@ pipeline {
             withCredentials([aws(accessKeyVariable: 'AWS_ACCESS_KEY_ID', credentialsId: 'aws-cred', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY')]) {
                 sh """
                     aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 042666117784.dkr.ecr.us-east-1.amazonaws.com
-                    docker push ${ECR_REPO}:${IMAGE_ID}
+                    docker tag ${ECR_REPO}:${COMMIT_ID} ${ECR_REPO}:${COMMIT_ID}
+                    docker push ${ECR_REPO}:${COMMIT_ID}
                 """
             }
-                echo "Pushed ${ECR_REPO}:${IMAGE_ID} to ECR."
+                echo "Pushed ${ECR_REPO}:${COMMIT_ID} to ECR."
         }
       }
     }
@@ -55,7 +55,7 @@ pipeline {
     stage('Cleanup') {
       steps {
         script {
-          sh "docker rmi ${ECR_REPO}:${IMAGE_ID} || true"
+          sh "docker rmi ${ECR_REPO}:${COMMIT_ID} || true"
         }
       }
     }
@@ -63,7 +63,7 @@ pipeline {
 
   post {
     success {
-      echo "Image ${ECR_REPO}:${IMAGE_ID} pushed successfully."
+      echo "Image ${ECR_REPO}:${COMMIT_ID} pushed successfully."
     }
     failure {
       echo "Pipeline failed. Check logs."
