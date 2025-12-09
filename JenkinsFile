@@ -1,0 +1,72 @@
+pipeline {
+  agent { label 'slave-1' }
+
+  environment {
+    ECR_REPO = '042666117784.dkr.ecr.us-east-1.amazonaws.com/push-from-pipeline' 
+    DOCKER_CRED_ID = 'docker-hub-cred'
+    IMAGE_ID="${IMAGE_ID}"
+    GIT_URL="https://github.com/harishrajput13/voting-appli-k8-s-pipeline.git"
+    BRANCH="main"
+  }
+
+  stages {
+    stage('Checkout') {
+      steps {
+         script {
+              git url: ${GIT_URL}, branch: ${BRANCH}
+              COMMIT_ID = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
+            }
+        }
+    }
+
+    stage('Build Image') {
+      steps {
+        script {
+          sh 'docker build -t ${ECR_REPO}:${IMAGE_ID} .'
+        }
+      }
+    }
+
+    stage('Test Image') {
+      steps {
+        script {
+          sh '''
+            CID=$(docker run -d -p 8080:80 ${ECR_REPO}:${IMAGE_ID})
+            docker rm -f $CID || true
+          '''
+        }
+      }
+    }
+
+    stage('Login & Push to ECR') {
+      steps {
+        script {
+            withCredentials([aws(accessKeyVariable: 'AWS_ACCESS_KEY_ID', credentialsId: 'aws-cred', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY')]) {
+                sh """
+                    aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 042666117784.dkr.ecr.us-east-1.amazonaws.com
+                    docker push ${ECR_REPO}:${IMAGE_ID}
+                """
+            }
+                echo "Pushed ${ECR_REPO}:${IMAGE_ID} to ECR."
+        }
+      }
+    }
+
+    stage('Cleanup') {
+      steps {
+        script {
+          sh "docker rmi ${ECR_REPO}:${IMAGE_ID} || true"
+        }
+      }
+    }
+  }
+
+  post {
+    success {
+      echo "Image ${ECR_REPO}:${IMAGE_ID} pushed successfully."
+    }
+    failure {
+      echo "Pipeline failed. Check logs."
+    }
+  }
+}
