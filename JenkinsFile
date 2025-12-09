@@ -22,7 +22,7 @@ pipeline {
     stage('Build Image') {
       steps {
         script {
-          sh 'docker build -t ${ECR_REPO}:"${COMMIT_ID}" .'
+          sh 'docker build -t ${ECR_REPO}:COMMIT_ID .'
         }
       }
     }
