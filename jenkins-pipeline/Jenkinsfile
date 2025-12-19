@@ -16,7 +16,7 @@ pipeline {
     }
 
     stages{
-         stage (Get Commit id) {
+         stage (Get Commit) {
             steps {
                 COMMIT_ID = sh (script: "git rev-parse --short HEAD", returnStdout: true).trim()
                 env.IMAGE_TAG = COMMIT_ID
@@ -34,7 +34,7 @@ pipeline {
     }
 
     stages {
-        stage (Testing the image) {
+        stage (Testing) {
             script {
                 sh '''
                 CID = $(docker run -itd -p 8080:80 ${env.IMAGE_TAG})
