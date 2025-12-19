@@ -10,7 +10,7 @@ pipeline {
     stages {
         stage ('Checkout') {
             steps { 
-                git branch: 'main', url: GITHUB_URL
+                git branch: "main", url: GITHUB_URL
             } 
         }
     }
