@@ -1,0 +1,41 @@
+apiVersion: apps/v1 
+kind: Deployment 
+metadata: 
+  name: db-deploy 
+  Labels: 
+    app: db 
+spec: 
+  replicas: 1 
+  selector: 
+    matchLabels: 
+      app: db 
+  template: 
+    metadata: 
+      Labels: 
+        app: db 
+    spec: 
+      containers: 
+        - name: postgres-cont 
+          image: postgres:13
+          ports: 
+            - containerPort: 5432
+          env: 
+            - name: POSTGRES_USER
+              valueFrom: 
+                configMapKeyRef: 
+                  name: db-configmap
+                  key: POSTGRES_USER
+            - name: POSTGRES_PASSWORD 
+              valueFrom: 
+                secretKeyRef: 
+                  name: db-secrets
+                  key: POSTGRES_PASSWORD
+          
+          volumeMounts: 
+            - mountPath: /var/lib/docker/volume/postgresql/data
+              name: db-volume
+          
+      volume: 
+        - name: db-volume 
+          emptyDir: {}
+                
