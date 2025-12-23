@@ -8,6 +8,7 @@ pipeline {
     }    
 
     stages {
+        
          stage ('Get Checkout') {
             steps {
                 script {
@@ -18,9 +19,7 @@ pipeline {
                 }
             }
         }
-    }
-
-    stages { 
+ 
         stage ('Build Image for vote') {
             steps { 
                 script {
@@ -28,9 +27,7 @@ pipeline {
                 }
             }
         }
-    }
-
-    stages { 
+ 
         stage ('Build Image for result') {
             steps {
                 script {
@@ -38,22 +35,18 @@ pipeline {
                 }
             }
         }
-    }
 
-    stages {
         stage ('Testing vote') {
             steps {
                 script {
                     sh '''
-                    CID = $(docker run -itd -p 8080:80 ${env.IMAGE_TAG})
+                    CID = $(docker run -itd -p 8080:80 ${DOCKERHUB_REPO}/vote:${env.IMAGE_TAG})
                     docker rm -f $CID || true
                     '''
                 }
             }
         }
-    }
 
-    stages {
         stage ('Login & Push Image') {
             steps {
                 script {
@@ -69,9 +62,7 @@ pipeline {
                 }
             }
         }
-    }
-
-    stages{
+        
         stage ('Cleanup Docker') {
             steps {
                 script {
@@ -80,7 +71,6 @@ pipeline {
                 }
             }
         }
-    }
 
     post {
         success {
