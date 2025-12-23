@@ -83,7 +83,7 @@ pipeline {
     }
 
     post {
-        sucess {
+        success {
             echo "Image ${DOCKERHUB_REPO}/vote:${env.IMAGE_TAG} Sucessfully"
             echo "Image ${DOCKERHUB_REPO}/result:${env.IMAGE_TAG} Sucessfully"
         }
