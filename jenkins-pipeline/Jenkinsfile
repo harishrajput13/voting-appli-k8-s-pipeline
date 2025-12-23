@@ -8,17 +8,10 @@ pipeline {
     }    
 
     stages {
-        stage ('Checkout') {
-            steps { 
-                git branch: 'main', url: GITHUB_URL
-            } 
-        }
-    }
-
-    stages {
-         stage ('Get Commit') {
+         stage ('Get Checkout') {
             steps {
                 script {
+                    git branch: 'main', url: GITHUB_URL
                     COMMIT_ID = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
                     env.IMAGE_TAG = COMMIT_ID
                     echo "Commit id: ${env.IMAGE_TAG}"
