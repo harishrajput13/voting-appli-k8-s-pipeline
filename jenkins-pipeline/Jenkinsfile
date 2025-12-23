@@ -23,15 +23,19 @@ pipeline {
     stages { 
         stage ('Build Image for vote') {
             steps { 
-                docker.build ("${DOCKERHUB_REPO}/vote:${IMAGE_TAG}", "vote")
+                script {
+                    docker.build ("${DOCKERHUB_REPO}/vote:${IMAGE_TAG}", "vote")
+                }
             }
         }
     }
 
     stages { 
         stage ('Build Image for result') {
-            steps { 
-                docker.build ("${DOCKERHUB_REPO}/result:${IMAGE_TAG}", "result")
+            steps {
+                script {
+                    docker.build ("${DOCKERHUB_REPO}/result:${IMAGE_TAG}", "result")
+                }
             }
         }
     }
@@ -70,8 +74,10 @@ pipeline {
     stages{
         stage ('Cleanup Docker') {
             steps {
-                sh 'docker rmi ${DOCKERHUB_REPO}/vote:${env.IMAGE_TAG} || true'
-                sh 'docker rmi ${DOCKERHUB_REPO}/result:${env.IMAGE_TAG} || true'
+                script {
+                    sh 'docker rmi ${DOCKERHUB_REPO}/vote:${env.IMAGE_TAG} || true'
+                    sh 'docker rmi ${DOCKERHUB_REPO}/result:${env.IMAGE_TAG} || true'
+                }
             }
         }
     }
