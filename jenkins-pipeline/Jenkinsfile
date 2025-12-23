@@ -21,15 +21,23 @@ pipeline {
     }
 
     stages { 
-        stage ('Build Image from Dockerfile') {
+        stage ('Build Image for vote') {
             steps { 
-                sh 'docker build . -f /vote/Dockerfile -t ${env.IMAGE_TAG}'
+                docker.build (${DOCKERHUB_REPO/vote:${IMAGE_TAG}, "vote")
+            }
+        }
+    }
+
+    stages { 
+        stage ('Build Image for result') {
+            steps { 
+                docker.build (${DOCKERHUB_REPO/result:${IMAGE_TAG}, "result")
             }
         }
     }
 
     stages {
-        stage ('Testing') {
+        stage ('Testing vote') {
             steps {
                 script {
                     sh '''
@@ -48,10 +56,12 @@ pipeline {
             	    withCredentials([aws(accessKeyVariable: 'AWS_ACCESS_KEY_ID', credentialsId: 'aws-cred', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY')]) {
                     sh '''
                         aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 260475104650.dkr.ecr.us-east-1.amazonaws.com
-                        docker push ${DOCKERHUB_REPO}:${env.IMAGE_TAG}
+                        docker.image("${DOCKERHUB_REPO}/vote:${IMAGE_TAG}").push()
+                        docker.image("${DOCKERHUB_REPO}/result:${IMAGE_TAG}").push()
                     '''
-            }  
-                echo "Push ${DOCKERHUB_REPO}:${env.IMAGE_TAG} to DockerHub" 
+                }  
+                echo "Push ${DOCKERHUB_REPO}/vote:${env.IMAGE_TAG} to DockerHub" 
+                echo "Push ${DOCKERHUB_REPO}/result:${env.IMAGE_TAG} to DockerHub"
                 }
             }
         }
@@ -60,14 +70,16 @@ pipeline {
     stages{
         stage ('Cleanup Docker') {
             steps {
-                sh 'docker rmi ${DOCKERHUB_REPO}:${env.IMAGE_TAG} || true'
+                sh 'docker rmi ${DOCKERHUB_REPO}/vote:${env.IMAGE_TAG} || true'
+                sh 'docker rmi ${DOCKERHUB_REPO}/result:${env.IMAGE_TAG} || true'
             }
         }
     }
 
     post {
         sucess {
-            echo "Image ${DOCKERHUB_REPO}:${env.IMAGE_TAG} Sucessfully"
+            echo "Image ${DOCKERHUB_REPO}/vote:${env.IMAGE_TAG} Sucessfully"
+            echo "Image ${DOCKERHUB_REPO}/result:${env.IMAGE_TAG} Sucessfully"
         }
         failure {
             echo "Pipeline is failed, check logs"
