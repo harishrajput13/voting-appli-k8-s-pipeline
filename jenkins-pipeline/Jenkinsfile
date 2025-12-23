@@ -18,9 +18,11 @@ pipeline {
     stages{
          stage ('Get Commit') {
             steps {
-                COMMIT_ID = sh (script: "git rev-parse --short HEAD", returnStdout: true).trim()
-                env.IMAGE_TAG = COMMIT_ID
-                echo "Commit id: ${env.IMAGE_TAG}"
+                script {
+                    COMMIT_ID = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
+                    env.IMAGE_TAG = COMMIT_ID
+                    echo "Commit id: ${env.IMAGE_TAG}"
+                }
             }
         }
     }
