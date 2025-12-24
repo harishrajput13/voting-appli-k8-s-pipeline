@@ -4,7 +4,7 @@ pipeline {
     environment {
         DOCKERHUB_REPO="harishrajput3/harish-repo"
         DOCKER_CRED_ID="dockerhub-cred"
-        GITHUB_URL="https://github.com/harishrajput13/voting-app-k8s.git"
+        GITHUB_URL="https://github.com/harishrajput13/voting-appli-k8-s-pipeline.git"
     }    
 
     stages {
