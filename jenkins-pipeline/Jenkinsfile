@@ -55,8 +55,8 @@ pipeline {
                         docker.image("${DOCKERHUB_REPO}/result:${IMAGE_TAG}").push()
                     '''
                 }  
-                echo "Push ${DOCKERHUB_REPO}/vote:${env.IMAGE_TAG} to DockerHub" 
-                echo "Push ${DOCKERHUB_REPO}/result:${env.IMAGE_TAG} to DockerHub"
+                echo "Push ${DOCKERHUB_REPO}/vote:${IMAGE_TAG} to DockerHub" 
+                echo "Push ${DOCKERHUB_REPO}/result:${IMAGE_TAG} to DockerHub"
                 }
             }
         }
@@ -64,8 +64,8 @@ pipeline {
         stage ('Cleanup Docker') {
             steps {
                 script {
-                    sh 'docker rmi ${DOCKERHUB_REPO}/vote:${env.IMAGE_TAG} || true'
-                    sh 'docker rmi ${DOCKERHUB_REPO}/result:${env.IMAGE_TAG} || true'
+                    sh 'docker rmi ${DOCKERHUB_REPO}/vote:${IMAGE_TAG} || true'
+                    sh 'docker rmi ${DOCKERHUB_REPO}/result:${IMAGE_TAG} || true'
                 }
             }
         }
@@ -73,8 +73,8 @@ pipeline {
 
     post {
         success {
-            echo "Image ${DOCKERHUB_REPO}/vote:${env.IMAGE_TAG} Sucessfully"
-            echo "Image ${DOCKERHUB_REPO}/result:${env.IMAGE_TAG} Sucessfully"
+            echo "Image ${DOCKERHUB_REPO}/vote:${IMAGE_TAG} Sucessfully"
+            echo "Image ${DOCKERHUB_REPO}/result:${IMAGE_TAG} Sucessfully"
         }
         failure {
             echo "Pipeline is failed, check logs"
