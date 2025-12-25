@@ -49,7 +49,7 @@ pipeline {
         stage ('Login & Push Image') {
             steps {
                 script {
-                    docker.withRegistry('https://hub.docker.com/repository/docker/harishrajput3/harish-repo', DOCKER_CRED_ID) {
+                    withDockerRegistry(credentialsId: DOCKER_CRED_ID, url: 'https://hub.docker.com/repository/docker/harishrajput3/harish-repo') {
                     sh '''
                         docker.image("${DOCKERHUB_REPO}/vote:${IMAGE_TAG}").push()
                         docker.image("${DOCKERHUB_REPO}/result:${IMAGE_TAG}").push()
