@@ -2,7 +2,8 @@ pipeline {
     agent {label 'slave-1'} 
 
     environment {
-        DOCKERHUB_REPO="harishrajput3/harish-repo"
+        DOCKERHUB_USER="harishrajput3"
+        DOCKERHUB_REPO="harish-repo"
         GITHUB_URL="https://github.com/harishrajput13/voting-appli-k8-s-pipeline.git"
         DOCKER_CRED_ID="docker-cred"
     }    
@@ -22,7 +23,7 @@ pipeline {
         stage ('Build Image for vote') {
             steps { 
                 script {
-                    docker.build ("${DOCKERHUB_REPO}:vote-${IMAGE_TAG}", "vote")
+                    docker.build ("${DOCKERHUB_USER}/${DOCKERHUB_USER}/${DOCKERHUB_REPO}:vote-${IMAGE_TAG}", "vote")
                 }
             }
         }
@@ -30,7 +31,7 @@ pipeline {
         stage ('Build Image for result') {
             steps {
                 script {
-                    docker.build ("${DOCKERHUB_REPO}:result-${IMAGE_TAG}", "result")
+                    docker.build ("${DOCKERHUB_USER}/${DOCKERHUB_USER}/${DOCKERHUB_REPO}:result-${IMAGE_TAG}", "result")
                 }
             }
         }
@@ -39,7 +40,7 @@ pipeline {
             steps {
                 script {
                     sh '''
-                        CID=$(docker run -d -p 8080:80 ${DOCKERHUB_REPO}:vote-${IMAGE_TAG})
+                        CID=$(docker run -d -p 8080:80 ${DOCKERHUB_USER}/${DOCKERHUB_REPO}:vote-${IMAGE_TAG})
                         docker rm -f $CID || true
                     '''
                 }
@@ -51,12 +52,12 @@ pipeline {
                 script {
                     withDockerRegistry(credentialsId: DOCKER_CRED_ID, url: 'https://index.docker.io') {
                     sh '''
-                        docker push ${DOCKERHUB_REPO}:vote-${IMAGE_TAG}
-                        docker push ${DOCKERHUB_REPO}:result-${IMAGE_TAG}
+                        docker push ${DOCKERHUB_USER}/${DOCKERHUB_REPO}:vote-${IMAGE_TAG}
+                        docker push ${DOCKERHUB_USER}/${DOCKERHUB_REPO}:result-${IMAGE_TAG}
                     '''
                 }  
-                echo "Push ${DOCKERHUB_REPO}:vote-${IMAGE_TAG} to DockerHub" 
-                echo "Push ${DOCKERHUB_REPO}:result-${IMAGE_TAG} to DockerHub"
+                echo "Push ${DOCKERHUB_USER}/${DOCKERHUB_REPO}:vote-${IMAGE_TAG} to DockerHub" 
+                echo "Push ${DOCKERHUB_USER}/${DOCKERHUB_REPO}:result-${IMAGE_TAG} to DockerHub"
                 }
             }
         }
@@ -64,8 +65,8 @@ pipeline {
         stage ('Cleanup Docker') {
             steps {
                 script {
-                    sh 'docker rmi ${DOCKERHUB_REPO}/vote:${IMAGE_TAG} || true'
-                    sh 'docker rmi ${DOCKERHUB_REPO}/result:${IMAGE_TAG} || true'
+                    sh 'docker rmi ${DOCKERHUB_USER}/${DOCKERHUB_REPO}:vote-${IMAGE_TAG} || true'
+                    sh 'docker rmi ${DOCKERHUB_USER}/${DOCKERHUB_REPO}:result-${IMAGE_TAG} || true'
                 }
             }
         }
@@ -73,8 +74,8 @@ pipeline {
 
     post {
         success {
-            echo "Image ${DOCKERHUB_REPO}:vote-${IMAGE_TAG} Sucessfully"
-            echo "Image ${DOCKERHUB_REPO}:result-${IMAGE_TAG} Sucessfully"
+            echo "Image ${DOCKERHUB_USER}/${DOCKERHUB_REPO}:vote-${IMAGE_TAG} Sucessfully"
+            echo "Image ${DOCKERHUB_USER}/${DOCKERHUB_REPO}:result-${IMAGE_TAG} Sucessfully"
         }
         failure {
             echo "Pipeline is failed, check logs"
