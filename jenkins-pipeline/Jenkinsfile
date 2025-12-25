@@ -23,7 +23,7 @@ pipeline {
         stage ('Build Image for vote') {
             steps { 
                 script {
-                    docker.build ("${DOCKERHUB_USER}/${DOCKERHUB_USER}/${DOCKERHUB_REPO}:vote-${IMAGE_TAG}", "vote")
+                    docker.build ("${DOCKERHUB_USER}/${DOCKERHUB_REPO}:vote-${IMAGE_TAG}", "vote")
                 }
             }
         }
@@ -31,7 +31,7 @@ pipeline {
         stage ('Build Image for result') {
             steps {
                 script {
-                    docker.build ("${DOCKERHUB_USER}/${DOCKERHUB_USER}/${DOCKERHUB_REPO}:result-${IMAGE_TAG}", "result")
+                    docker.build ("${DOCKERHUB_USER}/${DOCKERHUB_REPO}:result-${IMAGE_TAG}", "result")
                 }
             }
         }
