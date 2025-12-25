@@ -50,9 +50,8 @@ pipeline {
         stage ('Login & Push Image') {
             steps {
                 script {
-            	    withCredentials([aws(accessKeyVariable: 'AWS_ACCESS_KEY_ID', credentialsId: 'aws-cred', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY')]) {
+                    withDockerRegistry(credentialsId: 'docker-cred', url: 'https://hub.docker.com/repository/docker/harishrajput3/harish-repo') {
                     sh '''
-                        aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 260475104650.dkr.ecr.us-east-1.amazonaws.com
                         docker.image("${DOCKERHUB_REPO}/vote:${IMAGE_TAG}").push()
                         docker.image("${DOCKERHUB_REPO}/result:${IMAGE_TAG}").push()
                     '''
