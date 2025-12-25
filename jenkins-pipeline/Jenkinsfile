@@ -38,8 +38,10 @@ pipeline {
         stage ('Testing vote') {
             steps {
                 script {
-                    sh 'CID=$(docker run -d -p 8080:80 ${DOCKERHUB_REPO}/vote:${env.IMAGE_TAG})'
-                    sh 'docker rm -f $CID || true'
+                    sh '''
+                        CID=$(docker run -d -p 8080:80 ${DOCKERHUB_REPO}/vote:${env.IMAGE_TAG})
+                        docker rm -f $CID || true
+                    '''
                 }
             }
         }
