@@ -5,6 +5,7 @@ pipeline {
         DOCKERHUB_REPO="harishrajput3/harish-repo"
         DOCKER_CRED_ID="dockerhub-cred"
         GITHUB_URL="https://github.com/harishrajput13/voting-appli-k8-s-pipeline.git"
+        DOCKER_CRED_ID="docker-cred"
     }    
 
     stages {
@@ -49,7 +50,7 @@ pipeline {
         stage ('Login & Push Image') {
             steps {
                 script {
-                    withDockerRegistry(credentialsId: 'docker-cred', url: 'https://hub.docker.com/repository/docker/harishrajput3/harish-repo') {
+                    docker.withRegistry('https://hub.docker.com/repository/docker/harishrajput3/harish-repo', DOCKER_CRED_ID) {
                     sh '''
                         docker.image("${DOCKERHUB_REPO}/vote:${IMAGE_TAG}").push()
                         docker.image("${DOCKERHUB_REPO}/result:${IMAGE_TAG}").push()
