@@ -22,7 +22,7 @@ pipeline {
         stage ('Build Image for vote') {
             steps { 
                 script {
-                    docker.build ("${DOCKERHUB_REPO}/vote:${IMAGE_TAG}", "vote")
+                    docker.build ("${DOCKERHUB_REPO}:vote-${IMAGE_TAG}", "vote")
                 }
             }
         }
@@ -30,7 +30,7 @@ pipeline {
         stage ('Build Image for result') {
             steps {
                 script {
-                    docker.build ("${DOCKERHUB_REPO}/result:${IMAGE_TAG}", "result")
+                    docker.build ("${DOCKERHUB_REPO}:result-${IMAGE_TAG}", "result")
                 }
             }
         }
@@ -51,12 +51,12 @@ pipeline {
                 script {
                     withDockerRegistry(credentialsId: DOCKER_CRED_ID, url: 'https://index.docker.io') {
                     sh '''
-                        docker push ${DOCKERHUB_REPO}/vote:${IMAGE_TAG}
-                        docker push ${DOCKERHUB_REPO}/result:${IMAGE_TAG}
+                        docker push ${DOCKERHUB_REPO}:vote-${IMAGE_TAG}
+                        docker push ${DOCKERHUB_REPO}:result-${IMAGE_TAG}
                     '''
                 }  
-                echo "Push ${DOCKERHUB_REPO}/vote:${IMAGE_TAG} to DockerHub" 
-                echo "Push ${DOCKERHUB_REPO}/result:${IMAGE_TAG} to DockerHub"
+                echo "Push ${DOCKERHUB_REPO}:vote-${IMAGE_TAG} to DockerHub" 
+                echo "Push ${DOCKERHUB_REPO}:result-${IMAGE_TAG} to DockerHub"
                 }
             }
         }
@@ -73,8 +73,8 @@ pipeline {
 
     post {
         success {
-            echo "Image ${DOCKERHUB_REPO}/vote:${IMAGE_TAG} Sucessfully"
-            echo "Image ${DOCKERHUB_REPO}/result:${IMAGE_TAG} Sucessfully"
+            echo "Image ${DOCKERHUB_REPO}:vote-${IMAGE_TAG} Sucessfully"
+            echo "Image ${DOCKERHUB_REPO}:result-${IMAGE_TAG} Sucessfully"
         }
         failure {
             echo "Pipeline is failed, check logs"
