@@ -61,7 +61,47 @@ pipeline {
                 }
             }
         }
-        
+
+        stage ( Login to AWS EKS ) {
+            steps { 
+                script { 
+                    withCredentials([aws(accessKeyVariable: 'AWS_ACCESS_KEY_ID', credentialsId: 'aws-cred', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY')]) {
+                    sh 'aws eks update-kubeconfig --region us-east-1 --name eks'
+                    }
+                }
+            }
+        }
+
+        stage ( Deploy Manifest file ) {
+            steps { 
+                script { 
+                    sh 'kubectl apply -f k8s-specifications/'
+                }
+            }
+        }
+
+        stage ( Update Image on EKS ) {
+            steps { 
+                script { 
+                    sh '''
+                        kubectl set image deployment/vote-deploy vote-cont=${DOCKERHUB_USER}/${DOCKERHUB_REPO}:vote-${IMAGE_TAG}
+                        kubectl set image deployment/result-deploy result-cont=${DOCKERHUB_USER}/${DOCKERHUB_REPO}:result-${IMAGE_TAG}
+                    '''
+                }
+            }
+        }
+
+        stage('Verify deployment') {
+            steps {
+                script {
+                    sh '''
+                      kubectl rollout status deployment/vote-deploy
+                      kubectl rollout status deployment/result-deploy
+                    '''
+                }
+            }
+        }
+            
         stage ('Cleanup Docker') {
             steps {
                 script {
