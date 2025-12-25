@@ -1,74 +1,121 @@
 pipeline {
-    agent any 
+    agent {label 'slave-1'} 
 
     environment {
-        DOCKERHUB_REPO="harishrajput3/harish-repo"
-        DOCKER_CRED_ID="dockerhub-cred"
-        GITHUB_URL="https://github.com/harishrajput13/voting-app-k8s.git"
+        DOCKERHUB_USER="harishrajput3"
+        DOCKERHUB_REPO="harish-repo"
+        GITHUB_URL="https://github.com/harishrajput13/voting-appli-k8-s-pipeline.git"
+        DOCKER_CRED_ID="docker-cred"
     }    
 
     stages {
-        stage ('Checkout') {
-            steps { 
-                git branch: 'main', url: GITHUB_URL
-            } 
-        }
-    }
-
-    stages{
-         stage (Get Commit) {
+         stage ('Get Checkout') {
             steps {
-                COMMIT_ID = sh (script: "git rev-parse --short HEAD", returnStdout: true).trim()
-                env.IMAGE_TAG = COMMIT_ID
-                echo "Commit id: ${env.IMAGE_TAG}"
+                script {
+                    git branch: 'main', url: GITHUB_URL, credentialsId: 'git-cred'
+                    COMMIT_ID = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
+                    env.IMAGE_TAG = COMMIT_ID
+                    echo "Commit id: ${env.IMAGE_TAG}"
+                }
             }
         }
-    }
-
-    stages { 
-        stage ('Build Image from Dockerfile') {
+ 
+        stage ('Build Image for vote') {
             steps { 
-                sh 'docker build . -f /vote/Dockerfile -t ${env.IMAGE_TAG}'
+                script {
+                    docker.build ("${DOCKERHUB_USER}/${DOCKERHUB_REPO}:vote-${IMAGE_TAG}", "vote")
+                }
             }
         }
-    }
-
-    stages {
-        stage (Testing) {
-            script {
-                sh '''
-                CID = $(docker run -itd -p 8080:80 ${env.IMAGE_TAG})
-                docker rm -f $CID || true
-                '''
-            }
-        }
-    }
-
-    stages {
-        stage (Login & Push Image) {
-            script {
-            	withCredentials([aws(accessKeyVariable: 'AWS_ACCESS_KEY_ID', credentialsId: 'aws-cred', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY')]) {
-                sh '''
-                    aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 260475104650.dkr.ecr.us-east-1.amazonaws.com
-                    docker push ${DOCKERHUB_REPO}:${env.IMAGE_TAG}
-                '''
-            }  
-                echo "Push ${DOCKERHUB_REPO}:${env.IMAGE_TAG} to DockerHub" 
-            }
-        }
-    }
-
-    stages{
-        stage (Cleanup Docker) {
+ 
+        stage ('Build Image for result') {
             steps {
-                sh 'docker rmi ${DOCKERHUB_REPO}:${env.IMAGE_TAG} || true'
+                script {
+                    docker.build ("${DOCKERHUB_USER}/${DOCKERHUB_REPO}:result-${IMAGE_TAG}", "result")
+                }
+            }
+        }
+
+        stage ('Testing vote') {
+            steps {
+                script {
+                    sh '''
+                        CID=$(docker run -d -p 8080:80 ${DOCKERHUB_USER}/${DOCKERHUB_REPO}:vote-${IMAGE_TAG})
+                        docker rm -f $CID || true
+                    '''
+                }
+            }
+        }
+
+        stage ('Login & Push Image') {
+            steps {
+                script {
+                    withDockerRegistry(credentialsId: DOCKER_CRED_ID, url: 'https://index.docker.io/v1/') {
+                    sh '''
+                        docker push ${DOCKERHUB_USER}/${DOCKERHUB_REPO}:vote-${IMAGE_TAG}
+                        docker push ${DOCKERHUB_USER}/${DOCKERHUB_REPO}:result-${IMAGE_TAG}
+                    '''
+                }  
+                echo "Push ${DOCKERHUB_USER}/${DOCKERHUB_REPO}:vote-${IMAGE_TAG} to DockerHub" 
+                echo "Push ${DOCKERHUB_USER}/${DOCKERHUB_REPO}:result-${IMAGE_TAG} to DockerHub"
+                }
+            }
+        }
+
+        stage ( 'Login to AWS EKS' ) {
+            steps { 
+                script { 
+                    withCredentials([aws(accessKeyVariable: 'AWS_ACCESS_KEY_ID', credentialsId: 'aws-cred', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY')]) {
+                    sh 'aws eks update-kubeconfig --region us-east-1 --name eks'
+                    }
+                }
+            }
+        }
+
+        stage ( 'Deploy Manifest file' ) {
+            steps { 
+                script { 
+                    sh 'kubectl apply -f k8s-specifications/'
+                }
+            }
+        }
+
+        stage ( 'Update Image on EKS' ) {
+            steps { 
+                script { 
+                    sh '''
+                        kubectl set image deployment/vote-deploy vote-cont=${DOCKERHUB_USER}/${DOCKERHUB_REPO}:vote-${IMAGE_TAG}
+                        kubectl set image deployment/result-deploy result-cont=${DOCKERHUB_USER}/${DOCKERHUB_REPO}:result-${IMAGE_TAG}
+                    '''
+                }
+            }
+        }
+
+        stage('Verify deployment') {
+            steps {
+                script {
+                    sh '''
+                      kubectl rollout status deployment/vote-deploy
+                      kubectl rollout status deployment/result-deploy
+                    '''
+                }
+            }
+        }
+            
+        stage ('Cleanup Docker') {
+            steps {
+                script {
+                    sh 'docker rmi ${DOCKERHUB_USER}/${DOCKERHUB_REPO}:vote-${IMAGE_TAG} || true'
+                    sh 'docker rmi ${DOCKERHUB_USER}/${DOCKERHUB_REPO}:result-${IMAGE_TAG} || true'
+                }
             }
         }
     }
 
     post {
-        sucess {
-            echo "Image ${DOCKERHUB_REPO}:${env.IMAGE_TAG} Sucessfully"
+        success {
+            echo "Image ${DOCKERHUB_USER}/${DOCKERHUB_REPO}:vote-${IMAGE_TAG} Sucessfully"
+            echo "Image ${DOCKERHUB_USER}/${DOCKERHUB_REPO}:result-${IMAGE_TAG} Sucessfully"
         }
         failure {
             echo "Pipeline is failed, check logs"

@@ -16,6 +16,6 @@ spec:
     spec: 
       containers: 
       - name: vote-cont 
-        image: 
+        image: nginx
         ports: 
         - containerPort: 80  
