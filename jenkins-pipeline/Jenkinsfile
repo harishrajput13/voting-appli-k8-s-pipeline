@@ -51,8 +51,8 @@ pipeline {
                 script {
                     withDockerRegistry(credentialsId: DOCKER_CRED_ID, url: 'https://index.docker.io') {
                     sh '''
-                        docker.image("${DOCKERHUB_REPO}/vote:${IMAGE_TAG}").push()
-                        docker.image("${DOCKERHUB_REPO}/result:${IMAGE_TAG}").push()
+                        docker push ${DOCKERHUB_REPO}/vote:${IMAGE_TAG}
+                        docker push ${DOCKERHUB_REPO}/result:${IMAGE_TAG}
                     '''
                 }  
                 echo "Push ${DOCKERHUB_REPO}/vote:${IMAGE_TAG} to DockerHub" 
