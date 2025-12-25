@@ -1,12 +1,12 @@
-apiVersion: apps/v1 
+apiVersion: v1 
 kind: Service 
 metadata: 
   name: db-svc 
-  Labels: 
+  labels: 
     app: db
 spec: 
   type: ClusterIP
-  selectory: 
+  selector: 
     app: db 
   ports: 
     - port: 5432

@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment 
 metadata: 
   name: result-deploy 
-  Labels: 
+  labels: 
     app: result 
 spec: 
   replicas: 1
@@ -11,8 +11,8 @@ spec:
       app: result
   template: 
     metadata: 
-      Labels: 
-      app: result
+      labels: 
+        app: result
     spec: 
       containers: 
       - name: result-cont 
