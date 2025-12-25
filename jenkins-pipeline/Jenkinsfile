@@ -39,7 +39,7 @@ pipeline {
             steps {
                 script {
                     sh '''
-                        CID=$(docker run -d -p 8080:80 ${DOCKERHUB_REPO}/vote:${IMAGE_TAG})
+                        CID=$(docker run -d -p 8080:80 ${DOCKERHUB_REPO}:vote-${IMAGE_TAG})
                         docker rm -f $CID || true
                     '''
                 }
