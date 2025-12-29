@@ -16,7 +16,7 @@ spec:
     spec: 
       containers: 
       - name: result-cont 
-        image: 
+        image: nginx
         ports: 
         - containerPort: 80
 
