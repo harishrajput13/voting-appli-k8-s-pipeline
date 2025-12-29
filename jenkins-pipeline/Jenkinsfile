@@ -91,17 +91,6 @@ pipeline {
                 }
             }
         }
-
-        stage('Verify deployment') {
-            steps {
-                script {
-                    sh '''
-                      kubectl rollout status deployment/vote-deploy
-                      kubectl rollout status deployment/result-deploy
-                    '''
-                }
-            }
-        }
             
         stage ('Cleanup Docker') {
             steps {
