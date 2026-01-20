@@ -15,7 +15,8 @@ spec:
         app: result
     spec: 
       containers: 
-      - name: result-cont 
+      - name: result-cont
+        imagePullPolicy: "Always" 
         image: nginx
         ports: 
         - containerPort: 80

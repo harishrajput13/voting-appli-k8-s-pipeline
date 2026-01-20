@@ -15,7 +15,8 @@ spec:
         app: vote 
     spec: 
       containers: 
-      - name: vote-cont 
+      - name: vote-cont
+        imagePullPolicy: "Always" 
         image: nginx
         ports: 
         - containerPort: 80  
