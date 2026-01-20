@@ -86,7 +86,9 @@ pipeline {
                 script { 
                     sh '''
                         kubectl set image deployment/vote-deploy vote-cont=${DOCKERHUB_USER}/${DOCKERHUB_REPO}:vote-${IMAGE_TAG}
+			kubectl rollout restart deployment/vote-deploy
                         kubectl set image deployment/result-deploy result-cont=${DOCKERHUB_USER}/${DOCKERHUB_REPO}:result-${IMAGE_TAG}
+			kubectl rollout restart deployment/result-deploy
                     '''
                 }
             }
