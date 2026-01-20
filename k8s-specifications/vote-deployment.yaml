@@ -17,6 +17,6 @@ spec:
       containers: 
       - name: vote-cont
         imagePullPolicy: "Always" 
-        image: nginx
+        image: vote-bbeb744
         ports: 
         - containerPort: 80  
