@@ -17,7 +17,7 @@ spec:
       containers: 
       - name: result-cont
         imagePullPolicy: "Always" 
-        image: nginx
+        image: result-bbeb744
         ports: 
         - containerPort: 80
 
